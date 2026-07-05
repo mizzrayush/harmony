@@ -38,6 +38,9 @@ SET(LMMS_CORE_SRCS ${LMMS_SRCS} ${LMMS_COMMON_SRCS})
 # Add legacy GUI sources (this will append gui sources to LMMS_SRCS)
 ADD_SUBDIRECTORY(gui)
 
+# Restore common sources to LMMS_SRCS for the legacy build target and tests
+LIST(APPEND LMMS_SRCS ${LMMS_COMMON_SRCS})
+
 # Add Harmony GUI sources
 ADD_SUBDIRECTORY(harmony_gui)
 
