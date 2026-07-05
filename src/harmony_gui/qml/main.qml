@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import Harmony
 
 ApplicationWindow {
     id: root
@@ -7,6 +8,15 @@ ApplicationWindow {
     height: 720
     visible: true
     title: qsTr("Project Harmony - LMMS next-gen frontend")
+
+    // Global models accessed by subpanels
+    TrackListModel {
+        id: globalTrackListModel
+    }
+
+    MixerModel {
+        id: globalMixerModel
+    }
 
     // Modern Dark Theme Palette
     readonly property color colorBg: "#121214"

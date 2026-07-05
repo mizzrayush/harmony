@@ -3,6 +3,10 @@
  */
 
 #include "HarmonyApp.h"
+#include "PlaybackController.h"
+#include "BrowserModel.h"
+#include "TrackListModel.h"
+#include "MixerModel.h"
 #include <QQmlContext>
 #include <QCoreApplication>
 #include <QDebug>
@@ -22,8 +26,11 @@ HarmonyApp::~HarmonyApp()
 
 void HarmonyApp::init()
 {
-	// Expose useful global objects to QML context if needed later
-	// QQmlContext* context = m_engine.rootContext();
+	// Register Harmony bridge types for QML
+	qmlRegisterType<harmony::gui::PlaybackController>("Harmony", 1, 0, "PlaybackController");
+	qmlRegisterType<harmony::gui::BrowserModel>("Harmony", 1, 0, "BrowserModel");
+	qmlRegisterType<harmony::gui::TrackListModel>("Harmony", 1, 0, "TrackListModel");
+	qmlRegisterType<harmony::gui::MixerModel>("Harmony", 1, 0, "MixerModel");
 
 	// Load main QML from resources
 	const QUrl url(QStringLiteral("qrc:/qml/main.qml"));

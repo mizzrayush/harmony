@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
+import Harmony
 
 Rectangle {
     id: bottomRoot
@@ -153,11 +154,17 @@ Rectangle {
                 spacing: 8
                 anchors.margins: 12
 
-                Repeater {
-                    model: ["Master", "Ch 1 (Synth)", "Ch 2 (Drums)", "Ch 3 (Bass)", "Ch 4 (FX)"]
+                ListView {
+                    id: mixerListView
+                    orientation: ListView.Horizontal
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    spacing: 8
+                    model: globalMixerModel
+
                     delegate: Rectangle {
-                        width: 90
-                        Layout.fillHeight: true
+                        width: 95
+                        height: mixerListView.height
                         color: root.colorPanelLight
                         border.color: root.colorBorder
                         radius: 4
@@ -168,24 +175,25 @@ Rectangle {
                             spacing: 6
 
                             Text {
-                                text: modelData
+                                text: model.channelName
                                 color: root.colorText
                                 font.pixelSize: 10
                                 font.bold: true
                                 horizontalAlignment: Text.AlignHCenter
                                 Layout.fillWidth: true
+                                elide: Text.ElideRight
                             }
 
                             // Peak Meter
                             RowLayout {
                                 Layout.fillHeight: true
                                 Layout.alignment: Qt.AlignHCenter
-                                spacing: 8
+                                spacing: 6
 
                                 // Level slider fader
                                 Slider {
                                     id: fader
-                                    value: index === 0 ? 0.8 : 0.6
+                                    value: model.channelVolume
                                     orientation: Qt.Vertical
                                     Layout.fillHeight: true
                                     background: Rectangle {
@@ -194,20 +202,43 @@ Rectangle {
                                         radius: 2
                                         anchors.horizontalCenter: parent.horizontalCenter
                                     }
+                                    onMoved: {
+                                        model.channelVolume = value
+                                    }
                                 }
 
-                                // VU Meter Led Bar
+                                // VU Meter Led Bar (Left Channel)
                                 Rectangle {
-                                    width: 6
+                                    width: 4
                                     Layout.fillHeight: true
                                     color: root.colorBorder
-                                    radius: 2
+                                    radius: 1
 
                                     Rectangle {
                                         anchors.bottom: parent.bottom
                                         width: parent.width
-                                        height: parent.height * fader.value
-                                        radius: 2
+                                        height: parent.height * Math.min(1.0, Math.max(0.0, model.peakLeft))
+                                        radius: 1
+                                        gradient: Gradient {
+                                            GradientStop { position: 0.0; color: "#e84118" } // Red peak
+                                            GradientStop { position: 0.2; color: "#fbc531" } // Yellow mid
+                                            GradientStop { position: 0.8; color: "#4cd137" } // Green safe
+                                        }
+                                    }
+                                }
+
+                                // VU Meter Led Bar (Right Channel)
+                                Rectangle {
+                                    width: 4
+                                    Layout.fillHeight: true
+                                    color: root.colorBorder
+                                    radius: 1
+
+                                    Rectangle {
+                                        anchors.bottom: parent.bottom
+                                        width: parent.width
+                                        height: parent.height * Math.min(1.0, Math.max(0.0, model.peakRight))
+                                        radius: 1
                                         gradient: Gradient {
                                             GradientStop { position: 0.0; color: "#e84118" } // Red peak
                                             GradientStop { position: 0.2; color: "#fbc531" } // Yellow mid

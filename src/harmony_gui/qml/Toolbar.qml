@@ -1,9 +1,14 @@
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
+import Harmony
 
 ToolBar {
     id: control
+
+    PlaybackController {
+        id: playback
+    }
 
     background: Rectangle {
         color: root.colorPanel
@@ -74,12 +79,13 @@ ToolBar {
                         anchors.centerIn: parent
                         text: "▶"
                         font.pixelSize: 14
-                        color: playBtn.hovered ? "#4cd137" : root.colorText
+                        color: playback.isPlaying ? "#4cd137" : (playBtn.hovered ? "#4cd137" : root.colorText)
                     }
                 }
                 Behavior on scale { NumberAnimation { duration: 100 } }
                 onPressed: scale = 0.95
                 onReleased: scale = 1.0
+                onClicked: playback.play()
             }
 
             // Pause Button
@@ -95,11 +101,12 @@ ToolBar {
                         anchors.centerIn: parent
                         text: "⏸"
                         font.pixelSize: 14
-                        color: root.colorText
+                        color: playback.isPaused ? "#f1c40f" : (pauseBtn.hovered ? "#f1c40f" : root.colorText)
                     }
                 }
                 onPressed: scale = 0.95
                 onReleased: scale = 1.0
+                onClicked: playback.pause()
             }
 
             // Stop Button
@@ -120,6 +127,7 @@ ToolBar {
                 }
                 onPressed: scale = 0.95
                 onReleased: scale = 1.0
+                onClicked: playback.stop()
             }
 
             // Record Button
@@ -157,7 +165,7 @@ ToolBar {
                 anchors.centerIn: parent
                 spacing: 8
                 Text {
-                    text: "001 . 01 . 000"
+                    text: playback.timePosition
                     color: "#00d2d3"
                     font.family: "Monospace"
                     font.pixelSize: 14
@@ -179,7 +187,7 @@ ToolBar {
             }
             SpinBox {
                 id: bpmSpinBox
-                value: 120
+                value: playback.tempo
                 to: 999
                 from: 20
                 editable: true
@@ -199,6 +207,10 @@ ToolBar {
                     color: root.colorPanelLight
                     border.color: root.colorBorder
                     radius: 4
+                }
+
+                onValueModified: {
+                    playback.tempo = value
                 }
             }
         }
