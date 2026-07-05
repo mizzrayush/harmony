@@ -154,7 +154,9 @@ IF(WANT_QT6)
 	)
 
 	TARGET_COMPILE_DEFINITIONS(harmonyobjs
-		PRIVATE -Dharmonyobjs_EXPORTS
+		PRIVATE
+		-Dharmonyobjs_EXPORTS
+		-Dlmmsobjs_EXPORTS
 	)
 	target_static_definitions(harmonyobjs HARMONY_STATIC_DEFINE)
 
