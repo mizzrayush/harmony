@@ -8,3 +8,4 @@ file_filter = data/locale/<lang>.ts
 source_file = data/locale/en.ts
 source_lang = en
 type        = QT
+
