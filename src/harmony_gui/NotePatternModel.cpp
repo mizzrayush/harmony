@@ -109,7 +109,7 @@ void NotePatternModel::addNote(int key, int startTick, int lengthTicks, float ve
 		lmms::TimePos(lengthTicks),
 		lmms::TimePos(startTick),
 		key,
-		static_cast<volume_t>(velocity * lmms::DefaultVolume)
+		static_cast<lmms::volume_t>(velocity * lmms::DefaultVolume)
 	);
 	m_midiClip->addNote(newNote);
 	m_midiClip->rearrangeAllNotes();
@@ -177,7 +177,7 @@ void NotePatternModel::setNoteVelocity(int noteIndex, float velocity)
 	const auto& notes = m_midiClip->notes();
 	if (noteIndex >= 0 && noteIndex < static_cast<int>(notes.size())) {
 		lmms::Note* note = notes[noteIndex];
-		note->setVolume(static_cast<volume_t>(velocity * lmms::DefaultVolume));
+		note->setVolume(static_cast<lmms::volume_t>(velocity * lmms::DefaultVolume));
 		emit dataChanged(index(noteIndex), index(noteIndex), {VelocityRole});
 	}
 }
