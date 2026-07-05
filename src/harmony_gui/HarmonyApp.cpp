@@ -7,6 +7,9 @@
 #include "BrowserModel.h"
 #include "TrackListModel.h"
 #include "MixerModel.h"
+#include "NotePatternModel.h"
+#include "InstrumentControlModel.h"
+#include "ClipListModel.h"
 #include <QQmlContext>
 #include <QCoreApplication>
 #include <QDebug>
@@ -31,6 +34,9 @@ void HarmonyApp::init()
 	qmlRegisterType<harmony::gui::BrowserModel>("Harmony", 1, 0, "BrowserModel");
 	qmlRegisterType<harmony::gui::TrackListModel>("Harmony", 1, 0, "TrackListModel");
 	qmlRegisterType<harmony::gui::MixerModel>("Harmony", 1, 0, "MixerModel");
+	qmlRegisterType<harmony::gui::NotePatternModel>("Harmony", 1, 0, "NotePatternModel");
+	qmlRegisterType<harmony::gui::InstrumentControlModel>("Harmony", 1, 0, "InstrumentControlModel");
+	qmlRegisterType<harmony::gui::ClipListModel>("Harmony", 1, 0, "ClipListModel");
 
 	// Load main QML from resources
 	const QUrl url(QStringLiteral("qrc:/qml/main.qml"));

@@ -163,6 +163,11 @@ public:
 		return &m_baseNoteModel;
 	}
 
+	InstrumentSoundShaping* soundShaping()
+	{
+		return &m_soundShaping;
+	}
+
 	IntModel *firstKeyModel()
 	{
 		return &m_firstKeyModel;

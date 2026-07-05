@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
+import QtQuick.Shapes
 import Harmony
 
 Rectangle {
@@ -33,7 +34,7 @@ Rectangle {
                 anchors.leftMargin: 12
                 spacing: 8
 
-                property int activeTab: 1 // Default to FX Mixer
+                property int activeTab: 0 // Default to Piano Roll
 
                 Repeater {
                     model: ["Piano Roll", "FX Mixer", "Sampler"]
@@ -74,38 +75,58 @@ Rectangle {
         StackLayout {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            currentIndex: bottomRoot.children[1].children[0].children[0].activeTab // Bind stack layout index to active tab
+            currentIndex: bottomRoot.children[1].children[0].children[0].activeTab
 
-            // Page 0: Piano Roll Mock
+            // Page 0: Piano Roll (Interactive)
             RowLayout {
                 spacing: 0
 
-                // Piano keys column
-                Rectangle {
-                    width: 45
-                    Layout.fillHeight: true
-                    color: root.colorPanelLight
-                    border.color: root.colorBorder
-                    border.width: 1
+                property int stepWidth: 24
+                property int rowHeight: 20
+                property int totalSteps: 64
+                property int totalKeys: 60 // C2 (36) to B6 (95)
 
-                    ColumnLayout {
-                        anchors.fill: parent
-                        spacing: 2
-                        anchors.margins: 4
+                // Piano keys column (Scrolls synced with Note Grid)
+                ScrollView {
+                    id: pianoKeysScroll
+                    width: 50
+                    Layout.fillHeight: true
+                    ScrollBar.vertical.policy: ScrollBar.AlwaysOff
+                    clip: true
+
+                    Column {
+                        id: keysColumn
+                        width: parent.width
+                        y: noteGridScroll.contentY // Sync scroll Y position
+
                         Repeater {
-                            model: 6
+                            model: 60 // 60 keys, from key 95 down to 36
                             delegate: Rectangle {
-                                Layout.fillWidth: true
-                                height: 24
-                                color: (index % 2 === 0) ? "#ffffff" : "#1e1e24"
-                                border.color: root.colorBorder
-                                radius: 2
+                                width: pianoKeysScroll.width
+                                height: 20
+                                
+                                // Determine if black key (notes: C#, D#, F#, G#, A# -> 1,3,6,8,10 in octave)
+                                property int keyNum: 95 - index
+                                property int noteInOctave: keyNum % 12
+                                property bool isBlack: noteInOctave === 1 || noteInOctave === 3 || noteInOctave === 6 || noteInOctave === 8 || noteInOctave === 10
+
+                                color: isBlack ? "#1e1e24" : "#ffffff"
+                                border.color: "#888899"
+                                border.width: 0.5
+                                radius: 1
+
                                 Text {
                                     anchors.right: parent.right
                                     anchors.rightMargin: 4
                                     anchors.verticalCenter: parent.verticalCenter
-                                    text: "C" + (5 - index)
-                                    color: (index % 2 === 0) ? "#000000" : "#ffffff"
+                                    text: {
+                                        // Label C notes
+                                        if (noteInOctave === 0) {
+                                            return "C" + Math.floor(keyNum / 12 - 1)
+                                        }
+                                        return ""
+                                    }
+                                    color: isBlack ? "#ffffff" : "#000000"
                                     font.pixelSize: 8
                                     font.bold: true
                                 }
@@ -114,37 +135,168 @@ Rectangle {
                     }
                 }
 
-                // Note Grid
+                // Note Grid Area
                 ScrollView {
+                    id: noteGridScroll
                     Layout.fillWidth: true
                     Layout.fillHeight: true
                     clip: true
 
-                    Rectangle {
-                        anchors.fill: parent
-                        color: root.colorBg
+                    // Inside note grid layout
+                    Item {
+                        id: noteGrid
+                        width: 64 * 24 // totalSteps * stepWidth
+                        height: 60 * 20 // totalKeys * rowHeight
 
-                        // Grid lines
-                        Grid {
-                            columns: 16
-                            rows: 6
-                            spacing: 1
+                        // Dynamic grid separator canvas
+                        Canvas {
+                            id: gridCanvas
                             anchors.fill: parent
+                            
+                            onPaint: {
+                                var ctx = getContext("2d")
+                                ctx.clearRect(0, 0, width, height)
+                                ctx.lineWidth = 1
 
-                            Repeater {
-                                model: 96
-                                delegate: Rectangle {
-                                    width: 48
-                                    height: 24
-                                    color: root.colorPanel
+                                // Horizontal notes separations
+                                for (var y = 0; y <= height; y += 20) {
+                                    ctx.strokeStyle = "#1b1b1f"
+                                    ctx.beginPath()
+                                    ctx.moveTo(0, y)
+                                    ctx.lineTo(width, y)
+                                    ctx.stroke()
+                                }
+
+                                // Vertical bars separations
+                                for (var x = 0; x <= width; x += 24) {
+                                    var stepIndex = x / 24
+                                    if (stepIndex % 16 === 0) {
+                                        ctx.strokeStyle = "#4b4b54" // Bar
+                                        ctx.lineWidth = 1.5
+                                    } else if (stepIndex % 4 === 0) {
+                                        ctx.strokeStyle = "#2d2d35" // Beat
+                                        ctx.lineWidth = 1.0
+                                    } else {
+                                        ctx.strokeStyle = "#1a1b20" // Step
+                                        ctx.lineWidth = 0.5
+                                    }
+                                    ctx.beginPath()
+                                    ctx.moveTo(x, 0)
+                                    ctx.lineTo(x, height)
+                                    ctx.stroke()
                                 }
                             }
                         }
 
-                        // Mock Midi Notes
-                        Rectangle { x: 50; y: 28; width: 90; height: 16; radius: 3; color: root.colorAccent; border.color: "#9b60ff" }
-                        Rectangle { x: 150; y: 52; width: 60; height: 16; radius: 3; color: root.colorAccent; border.color: "#9b60ff" }
-                        Rectangle { x: 220; y: 4; width: 120; height: 16; radius: 3; color: root.colorAccent; border.color: "#9b60ff" }
+                        // Grid interaction mouse area
+                        MouseArea {
+                            anchors.fill: parent
+                            acceptedButtons: Qt.LeftButton
+                            onDoubleClicked: (mouse) => {
+                                var stepX = Math.floor(mouse.x / 24)
+                                var keyY = Math.floor(mouse.y / 20)
+                                var newKey = 95 - keyY
+                                var startTick = stepX * 12
+                                globalNotePatternModel.addNote(newKey, startTick, 48, 0.8) // 1 beat default
+                            }
+                        }
+
+                        // Notes Repeater
+                        Repeater {
+                            model: globalNotePatternModel
+                            delegate: Rectangle {
+                                id: noteRect
+                                x: (model.startTick / 12) * 24
+                                y: (95 - model.noteKey) * 20
+                                width: Math.max(12, (model.lengthTicks / 12) * 24)
+                                height: 18
+                                color: root.colorAccent
+                                border.color: Qt.lighter(root.colorAccent, 1.2)
+                                border.width: 1
+                                radius: 3
+
+                                Text {
+                                    anchors.left: parent.left
+                                    anchors.leftMargin: 4
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    text: model.noteName
+                                    color: "#ffffff"
+                                    font.pixelSize: 8
+                                    font.bold: true
+                                    visible: parent.width > 20
+                                }
+
+                                // Drag to move notes
+                                MouseArea {
+                                    anchors.fill: parent
+                                    drag.target: parent
+                                    drag.axis: Drag.XAndYAxis
+                                    drag.minimumX: 0
+                                    drag.maximumX: noteGrid.width - noteRect.width
+                                    drag.minimumY: 0
+                                    drag.maximumY: noteGrid.height - noteRect.height
+                                    acceptedButtons: Qt.LeftButton | Qt.RightButton
+
+                                    property int startX: 0
+                                    property int startY: 0
+
+                                    onPressed: (mouse) => {
+                                        startX = noteRect.x
+                                        startY = noteRect.y
+                                    }
+
+                                    onReleased: (mouse) => {
+                                        if (drag.active) {
+                                            var stepX = Math.round(noteRect.x / 24)
+                                            var keyY = Math.round(noteRect.y / 20)
+                                            var newKey = 95 - keyY
+                                            var newTick = Math.max(0, stepX * 12)
+                                            globalNotePatternModel.moveNote(model.noteIndex, newKey, newTick)
+                                        } else {
+                                            if (mouse.button === Qt.RightButton) {
+                                                globalNotePatternModel.removeNote(model.noteIndex)
+                                            }
+                                        }
+                                    }
+                                }
+
+                                // Resize handle
+                                Rectangle {
+                                    width: 6
+                                    anchors.top: parent.top
+                                    anchors.bottom: parent.bottom
+                                    anchors.right: parent.right
+                                    color: "transparent"
+                                    cursorShape: Qt.SizeHorCursor
+
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        drag.target: parent
+                                        drag.axis: Drag.XAxis
+
+                                        property int startWidth: 0
+                                        onPressed: (mouse) => {
+                                            startWidth = noteRect.width
+                                        }
+
+                                        onPositionChanged: (mouse) => {
+                                            if (drag.active) {
+                                                var delta = mouse.x
+                                                var newWidth = Math.max(12, noteRect.width + delta)
+                                                noteRect.width = newWidth
+                                            }
+                                        }
+
+                                        onReleased: (mouse) => {
+                                            var finalWidthSteps = Math.round(noteRect.width / 24)
+                                            if (finalWidthSteps < 1) finalWidthSteps = 1
+                                            var newLengthTicks = finalWidthSteps * 12
+                                            globalNotePatternModel.resizeNote(model.noteIndex, newLengthTicks)
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -260,12 +412,12 @@ Rectangle {
                 }
             }
 
-            // Page 2: Sampler View
+            // Page 2: Sampler View (Renovated ADSR, Filters and Waveform)
             ColumnLayout {
                 anchors.margins: 12
                 spacing: 12
 
-                // Waveform Mock
+                // Waveform Rendering
                 Rectangle {
                     Layout.fillWidth: true
                     height: 80
@@ -277,71 +429,204 @@ Rectangle {
                         anchors.left: parent.left
                         anchors.top: parent.top
                         anchors.margins: 8
-                        text: "Sample: Kick_Deep.wav (44.1kHz, 16bit, Mono)"
+                        text: "Instrument Waveform Engine (Dynamic Output)"
                         color: root.colorText
                         font.pixelSize: 10
                     }
 
-                    // A mock wave path
-                    Path {
-                        // Drawing waveform lines using Canvas or simple visual elements is fine, we can use a mockup gradient
-                    }
-
-                    Rectangle {
+                    Canvas {
+                        id: waveCanvas
                         anchors.fill: parent
                         anchors.topMargin: 24
                         anchors.bottomMargin: 8
-                        color: "transparent"
                         
-                        Row {
-                            anchors.fill: parent
-                            spacing: 1
-                            Repeater {
-                                model: 50
-                                delegate: Rectangle {
-                                    width: parent.width / 50 - 1
-                                    height: (Math.sin(index * 0.2) * 0.7 + 0.3) * parent.height
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    color: root.colorAccent
-                                    opacity: 0.7
+                        property real phase: 0.0
+                        
+                        // Slowly animate wave on play
+                        Timer {
+                            interval: 30
+                            running: true
+                            repeat: true
+                            onTriggered: {
+                                if (playback.isPlaying) {
+                                    waveCanvas.phase += 0.2
+                                    waveCanvas.requestPaint()
                                 }
                             }
+                        }
+
+                        onPaint: {
+                            var ctx = getContext("2d")
+                            ctx.clearRect(0, 0, width, height)
+                            ctx.strokeStyle = root.colorAccent
+                            ctx.lineWidth = 2
+                            ctx.beginPath()
+
+                            // Draw a beautiful synth sine/saw waveform modulated by envelopes
+                            var att = globalInstrumentControlModel.volumeAttack
+                            var dec = globalInstrumentControlModel.volumeDecay
+                            var sus = globalInstrumentControlModel.volumeSustain
+                            var rel = globalInstrumentControlModel.volumeRelease
+
+                            ctx.moveTo(0, height / 2)
+                            for (var x = 0; x < width; x++) {
+                                var factor = Math.sin(x * 0.05 - phase)
+                                // Modulate by Cutoff/Resonance settings
+                                var cut = globalInstrumentControlModel.filterCutoff
+                                var res = globalInstrumentControlModel.filterResonance
+                                var amp = (height / 3) * (0.3 + cut * 0.7)
+                                if (x * 0.1 > phase) {
+                                    amp = amp * Math.exp(-(x * 0.005))
+                                }
+                                var y = height / 2 + Math.sin(x * (0.05 + res * 0.05) - phase) * amp
+                                ctx.lineTo(x, y)
+                            }
+                            ctx.stroke()
                         }
                     }
                 }
 
-                // Envelope Controls (ADSR Knobs)
+                // Envelope & Filter Controls
                 RowLayout {
                     Layout.fillWidth: true
-                    spacing: 20
+                    spacing: 30
                     Layout.alignment: Qt.AlignHCenter
 
-                    Repeater {
-                        model: [
-                            { name: "ATTACK", val: 0.1 },
-                            { name: "DECAY", val: 0.3 },
-                            { name: "SUSTAIN", val: 0.8 },
-                            { name: "RELEASE", val: 0.5 }
-                        ]
-                        delegate: ColumnLayout {
-                            spacing: 4
-                            Text {
-                                text: modelData.name
-                                color: root.colorTextMuted
-                                font.pixelSize: 9
-                                font.bold: true
-                                horizontalAlignment: Text.AlignHCenter
+                    // Volume Envelope ADSR Panel
+                    GroupBox {
+                        title: "VOLUME ENVELOPE (ADSR)"
+                        flat: true
+                        Layout.alignment: Qt.AlignTop
+
+                        label: Text {
+                            text: "VOLUME ENVELOPE (ADSR)"
+                            color: root.colorText
+                            font.pixelSize: 10
+                            font.bold: true
+                        }
+
+                        background: Rectangle {
+                            color: "transparent"
+                        }
+
+                        RowLayout {
+                            spacing: 16
+
+                            // Attack
+                            ColumnLayout {
+                                spacing: 4
+                                Text { text: "ATTACK"; color: root.colorTextMuted; font.pixelSize: 8; font.bold: true; Layout.alignment: Qt.AlignHCenter }
+                                Dial {
+                                    id: attDial
+                                    value: globalInstrumentControlModel.volumeAttack
+                                    implicitWidth: 46; implicitHeight: 46
+                                    onMoved: globalInstrumentControlModel.volumeAttack = value
+                                    background: Rectangle { width: 46; height: 46; radius: 23; color: root.colorPanelLight; border.color: root.colorBorder }
+                                }
                             }
-                            Dial {
-                                value: modelData.val
-                                implicitWidth: 44
-                                implicitHeight: 44
-                                background: Rectangle {
-                                    width: 44
-                                    height: 44
-                                    radius: 22
-                                    color: root.colorPanelLight
-                                    border.color: root.colorBorder
+
+                            // Decay
+                            ColumnLayout {
+                                spacing: 4
+                                Text { text: "DECAY"; color: root.colorTextMuted; font.pixelSize: 8; font.bold: true; Layout.alignment: Qt.AlignHCenter }
+                                Dial {
+                                    id: decDial
+                                    value: globalInstrumentControlModel.volumeDecay
+                                    implicitWidth: 46; implicitHeight: 46
+                                    onMoved: globalInstrumentControlModel.volumeDecay = value
+                                    background: Rectangle { width: 46; height: 46; radius: 23; color: root.colorPanelLight; border.color: root.colorBorder }
+                                }
+                            }
+
+                            // Sustain
+                            ColumnLayout {
+                                spacing: 4
+                                Text { text: "SUSTAIN"; color: root.colorTextMuted; font.pixelSize: 8; font.bold: true; Layout.alignment: Qt.AlignHCenter }
+                                Dial {
+                                    id: susDial
+                                    value: globalInstrumentControlModel.volumeSustain
+                                    implicitWidth: 46; implicitHeight: 46
+                                    onMoved: globalInstrumentControlModel.volumeSustain = value
+                                    background: Rectangle { width: 46; height: 46; radius: 23; color: root.colorPanelLight; border.color: root.colorBorder }
+                                }
+                            }
+
+                            // Release
+                            ColumnLayout {
+                                spacing: 4
+                                Text { text: "RELEASE"; color: root.colorTextMuted; font.pixelSize: 8; font.bold: true; Layout.alignment: Qt.AlignHCenter }
+                                Dial {
+                                    id: relDial
+                                    value: globalInstrumentControlModel.volumeRelease
+                                    implicitWidth: 46; implicitHeight: 46
+                                    onMoved: globalInstrumentControlModel.volumeRelease = value
+                                    background: Rectangle { width: 46; height: 46; radius: 23; color: root.colorPanelLight; border.color: root.colorBorder }
+                                }
+                            }
+                        }
+                    }
+
+                    // Separation Line
+                    Rectangle {
+                        width: 1
+                        height: 90
+                        color: root.colorBorder
+                    }
+
+                    // Analog Filter Panel
+                    GroupBox {
+                        title: "ANALOG FILTER"
+                        flat: true
+                        Layout.alignment: Qt.AlignTop
+
+                        label: Text {
+                            text: "ANALOG FILTER"
+                            color: root.colorText
+                            font.pixelSize: 10
+                            font.bold: true
+                        }
+
+                        background: Rectangle {
+                            color: "transparent"
+                        }
+
+                        RowLayout {
+                            spacing: 20
+
+                            // Filter Enabled CheckBox
+                            ColumnLayout {
+                                spacing: 4
+                                Text { text: "ENABLED"; color: root.colorTextMuted; font.pixelSize: 8; font.bold: true; Layout.alignment: Qt.AlignHCenter }
+                                CheckBox {
+                                    id: filterEnableBox
+                                    checked: globalInstrumentControlModel.filterEnabled
+                                    onCheckedChanged: globalInstrumentControlModel.filterEnabled = checked
+                                }
+                            }
+
+                            // Cutoff
+                            ColumnLayout {
+                                spacing: 4
+                                Text { text: "CUTOFF"; color: root.colorTextMuted; font.pixelSize: 8; font.bold: true; Layout.alignment: Qt.AlignHCenter }
+                                Dial {
+                                    id: cutDial
+                                    value: globalInstrumentControlModel.filterCutoff
+                                    implicitWidth: 46; implicitHeight: 46
+                                    onMoved: globalInstrumentControlModel.filterCutoff = value
+                                    background: Rectangle { width: 46; height: 46; radius: 23; color: root.colorPanelLight; border.color: root.colorBorder }
+                                }
+                            }
+
+                            // Resonance
+                            ColumnLayout {
+                                spacing: 4
+                                Text { text: "RESONANCE"; color: root.colorTextMuted; font.pixelSize: 8; font.bold: true; Layout.alignment: Qt.AlignHCenter }
+                                Dial {
+                                    id: resDial
+                                    value: globalInstrumentControlModel.filterResonance
+                                    implicitWidth: 46; implicitHeight: 46
+                                    onMoved: globalInstrumentControlModel.filterResonance = value
+                                    background: Rectangle { width: 46; height: 46; radius: 23; color: root.colorPanelLight; border.color: root.colorBorder }
                                 }
                             }
                         }

@@ -18,6 +18,38 @@ ApplicationWindow {
         id: globalMixerModel
     }
 
+    NotePatternModel {
+        id: globalNotePatternModel
+    }
+
+    InstrumentControlModel {
+        id: globalInstrumentControlModel
+    }
+
+    property int selectedTrackIndex: 0
+    onSelectedTrackIndexChanged: {
+        updateActiveTrack()
+    }
+
+    function updateActiveTrack() {
+        var trackId = globalTrackListModel.getTrackId(selectedTrackIndex)
+        globalNotePatternModel.setTrack(trackId)
+        globalInstrumentControlModel.setTrack(trackId)
+    }
+
+    Connections {
+        target: globalTrackListModel
+        function onModelReset() {
+            root.updateActiveTrack()
+        }
+        function onRowsInserted() {
+            root.updateActiveTrack()
+        }
+        function onRowsRemoved() {
+            root.updateActiveTrack()
+        }
+    }
+
     // Modern Dark Theme Palette
     readonly property color colorBg: "#121214"
     readonly property color colorPanel: "#1a1a1e"

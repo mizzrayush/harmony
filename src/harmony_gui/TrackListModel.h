@@ -24,7 +24,9 @@ public:
 		IsMutedRole,
 		IsSoloRole,
 		ColorRole,
-		ClipCountRole
+		ClipCountRole,
+		VolumeRole,
+		PanningRole
 	};
 
 	explicit TrackListModel(QObject* parent = nullptr);
@@ -37,6 +39,7 @@ public:
 	QHash<int, QByteArray> roleNames() const override;
 
 public slots:
+	Q_INVOKABLE void* getTrackId(int index) const;
 	void addInstrumentTrack(const QString& pluginName);
 	void deleteTrack(int index);
 	void toggleMute(int index);

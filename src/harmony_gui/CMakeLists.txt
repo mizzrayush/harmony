@@ -10,6 +10,9 @@ SET(HARMONY_GUI_SRCS
 	harmony_gui/BrowserModel.cpp
 	harmony_gui/TrackListModel.cpp
 	harmony_gui/MixerModel.cpp
+	harmony_gui/NotePatternModel.cpp
+	harmony_gui/InstrumentControlModel.cpp
+	harmony_gui/ClipListModel.cpp
 	harmony_gui/harmony_qml.qrc
 	PARENT_SCOPE
 )

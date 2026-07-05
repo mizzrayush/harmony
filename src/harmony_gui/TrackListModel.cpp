@@ -5,10 +5,37 @@
 #include "TrackListModel.h"
 #include "Engine.h"
 #include "InstrumentTrack.h"
+#include "SampleTrack.h"
 #include <QDebug>
 
 namespace harmony::gui
 {
+
+static lmms::FloatModel* getVolumeModel(lmms::Track* track)
+{
+	if (!track) return nullptr;
+	if (track->type() == lmms::Track::Type::Instrument) {
+		auto* it = dynamic_cast<lmms::InstrumentTrack*>(track);
+		return it ? it->volumeModel() : nullptr;
+	} else if (track->type() == lmms::Track::Type::Sample) {
+		auto* st = dynamic_cast<lmms::SampleTrack*>(track);
+		return st ? st->volumeModel() : nullptr;
+	}
+	return nullptr;
+}
+
+static lmms::FloatModel* getPanningModel(lmms::Track* track)
+{
+	if (!track) return nullptr;
+	if (track->type() == lmms::Track::Type::Instrument) {
+		auto* it = dynamic_cast<lmms::InstrumentTrack*>(track);
+		return it ? it->panningModel() : nullptr;
+	} else if (track->type() == lmms::Track::Type::Sample) {
+		auto* st = dynamic_cast<lmms::SampleTrack*>(track);
+		return st ? st->panningModel() : nullptr;
+	}
+	return nullptr;
+}
 
 TrackListModel::TrackListModel(QObject* parent)
 	: QAbstractListModel(parent)
@@ -66,6 +93,14 @@ QVariant TrackListModel::data(const QModelIndex& index, int role) const
 			return track->color().has_value() ? track->color().value().name() : "#7f39fb";
 		case ClipCountRole:
 			return static_cast<int>(track->getClips().size());
+		case VolumeRole: {
+			auto* vol = getVolumeModel(track);
+			return vol ? vol->value() : 100.0f;
+		}
+		case PanningRole: {
+			auto* pan = getPanningModel(track);
+			return pan ? pan->value() : 0.0f;
+		}
 		default:
 			return QVariant();
 	}
@@ -105,6 +140,24 @@ bool TrackListModel::setData(const QModelIndex& index, const QVariant& value, in
 			}
 			changed = true;
 		}
+	} else if (role == VolumeRole) {
+		auto* vol = getVolumeModel(track);
+		if (vol) {
+			float val = value.toFloat();
+			if (vol->value() != val) {
+				vol->setValue(val);
+				changed = true;
+			}
+		}
+	} else if (role == PanningRole) {
+		auto* pan = getPanningModel(track);
+		if (pan) {
+			float val = value.toFloat();
+			if (pan->value() != val) {
+				pan->setValue(val);
+				changed = true;
+			}
+		}
 	}
 
 	if (changed) {
@@ -124,7 +177,17 @@ QHash<int, QByteArray> TrackListModel::roleNames() const
 	roles[IsSoloRole] = "isSolo";
 	roles[ColorRole] = "trackColor";
 	roles[ClipCountRole] = "clipCount";
+	roles[VolumeRole] = "volume";
+	roles[PanningRole] = "panning";
 	return roles;
+}
+
+void* TrackListModel::getTrackId(int index) const
+{
+	if (index >= 0 && index < m_tracks.size()) {
+		return static_cast<void*>(m_tracks[index]);
+	}
+	return nullptr;
 }
 
 void TrackListModel::addInstrumentTrack(const QString& pluginName)
@@ -228,6 +291,23 @@ void TrackListModel::connectTrackSignals(lmms::Track* track)
 			emit dataChanged(this->index(index), this->index(index), {ColorRole});
 		}
 	});
+
+	if (auto* vol = getVolumeModel(track)) {
+		connect(vol, &lmms::Model::dataChanged, this, [this, track]() {
+			int index = m_tracks.indexOf(track);
+			if (index != -1) {
+				emit dataChanged(this->index(index), this->index(index), {VolumeRole});
+			}
+		});
+	}
+	if (auto* pan = getPanningModel(track)) {
+		connect(pan, &lmms::Model::dataChanged, this, [this, track]() {
+			int index = m_tracks.indexOf(track);
+			if (index != -1) {
+				emit dataChanged(this->index(index), this->index(index), {PanningRole});
+			}
+		});
+	}
 }
 
 } // namespace harmony::gui

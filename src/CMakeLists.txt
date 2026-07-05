@@ -160,20 +160,6 @@ IF(WANT_QT6)
 
 	target_static_libraries(harmony PUBLIC harmonyobjs)
 
-	TARGET_LINK_LIBRARIES(harmonyobjs
-		${LMMS_REQUIRED_LIBS}
-		Qt6::Quick
-		Qt6::Qml
-	)
-	target_static_libraries(harmonyobjs ringbuffer)
-
-	set_target_properties(harmonyobjs PROPERTIES AUTOUIC_SEARCH_PATHS "gui/modals")
-
-	set_target_properties(harmony PROPERTIES
-		ENABLE_EXPORTS ON
-		WIN32_EXECUTABLE $<NOT:$<CONFIG:DEBUG>>
-	)
-
 	INSTALL(TARGETS harmony RUNTIME DESTINATION "${BIN_DIR}")
 ENDIF()
 
@@ -262,6 +248,22 @@ set_target_properties(lmms PROPERTIES
 )
 
 set_target_properties(lmmsobjs PROPERTIES AUTOUIC_SEARCH_PATHS "gui/modals")
+
+IF(WANT_QT6)
+	TARGET_LINK_LIBRARIES(harmonyobjs
+		${LMMS_REQUIRED_LIBS}
+		Qt6::Quick
+		Qt6::Qml
+	)
+	target_static_libraries(harmonyobjs ringbuffer)
+
+	set_target_properties(harmonyobjs PROPERTIES AUTOUIC_SEARCH_PATHS "gui/modals")
+
+	set_target_properties(harmony PROPERTIES
+		ENABLE_EXPORTS ON
+		WIN32_EXECUTABLE $<NOT:$<CONFIG:DEBUG>>
+	)
+ENDIF()
 
 IF(NOT WIN32 AND NOT LMMS_BUILD_APPLE)
 	if(CMAKE_INSTALL_MANDIR)

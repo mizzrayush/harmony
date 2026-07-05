@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
+import QtQuick.Shapes
 import Harmony
 
 ToolBar {
@@ -70,16 +71,21 @@ ToolBar {
                 id: playBtn
                 implicitWidth: 32
                 implicitHeight: 32
-                icon.name: "media-playback-start"
                 background: Rectangle {
                     radius: 6
                     color: playBtn.hovered ? root.colorPanelLight : "transparent"
                     border.color: playBtn.hovered ? root.colorBorder : "transparent"
-                    Text {
-                        anchors.centerIn: parent
-                        text: "▶"
-                        font.pixelSize: 14
-                        color: playback.isPlaying ? "#4cd137" : (playBtn.hovered ? "#4cd137" : root.colorText)
+                }
+                contentItem: Shape {
+                    anchors.centerIn: parent
+                    width: 14
+                    height: 14
+                    ShapePath {
+                        fillColor: playback.isPlaying ? "#22c55e" : (playBtn.hovered ? "#22c55e" : root.colorText)
+                        strokeColor: "transparent"
+                        PathSvg {
+                            path: "M8 5v14l11-7z"
+                        }
                     }
                 }
                 Behavior on scale { NumberAnimation { duration: 100 } }
@@ -97,11 +103,17 @@ ToolBar {
                     radius: 6
                     color: pauseBtn.hovered ? root.colorPanelLight : "transparent"
                     border.color: pauseBtn.hovered ? root.colorBorder : "transparent"
-                    Text {
-                        anchors.centerIn: parent
-                        text: "⏸"
-                        font.pixelSize: 14
-                        color: playback.isPaused ? "#f1c40f" : (pauseBtn.hovered ? "#f1c40f" : root.colorText)
+                }
+                contentItem: Shape {
+                    anchors.centerIn: parent
+                    width: 14
+                    height: 14
+                    ShapePath {
+                        fillColor: playback.isPaused ? "#fbbf24" : (pauseBtn.hovered ? "#fbbf24" : root.colorText)
+                        strokeColor: "transparent"
+                        PathSvg {
+                            path: "M6 19h4V5H6v14zm8-14v14h4V5h-4z"
+                        }
                     }
                 }
                 onPressed: scale = 0.95
@@ -118,11 +130,17 @@ ToolBar {
                     radius: 6
                     color: stopBtn.hovered ? root.colorPanelLight : "transparent"
                     border.color: stopBtn.hovered ? root.colorBorder : "transparent"
-                    Text {
-                        anchors.centerIn: parent
-                        text: "■"
-                        font.pixelSize: 14
-                        color: stopBtn.hovered ? "#e84118" : root.colorText
+                }
+                contentItem: Shape {
+                    anchors.centerIn: parent
+                    width: 14
+                    height: 14
+                    ShapePath {
+                        fillColor: stopBtn.hovered ? "#ef4444" : root.colorText
+                        strokeColor: "transparent"
+                        PathSvg {
+                            path: "M6 6h12v12H6z"
+                        }
                     }
                 }
                 onPressed: scale = 0.95
@@ -139,12 +157,17 @@ ToolBar {
                     radius: 6
                     color: recBtn.hovered ? root.colorPanelLight : "transparent"
                     border.color: recBtn.hovered ? root.colorBorder : "transparent"
-                    Rectangle {
-                        anchors.centerIn: parent
-                        width: 10
-                        height: 10
-                        radius: 5
-                        color: "#e84118"
+                }
+                contentItem: Shape {
+                    anchors.centerIn: parent
+                    width: 12
+                    height: 12
+                    ShapePath {
+                        fillColor: recBtn.hovered ? "#ef4444" : "#b91c1c"
+                        strokeColor: "transparent"
+                        PathSvg {
+                            path: "M12 2C6.47 2 2 6.47 2 12s6.47 10 10 10 10-6.47 10-10S17.53 2 12 2z"
+                        }
                     }
                 }
                 onPressed: scale = 0.95

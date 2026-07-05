@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
+import QtQuick.Shapes
 import Harmony
 
 Rectangle {
@@ -41,10 +42,16 @@ Rectangle {
                 anchors.rightMargin: 8
                 spacing: 6
 
-                Text {
-                    text: "🔍"
-                    color: root.colorTextMuted
-                    font.pixelSize: 12
+                Shape {
+                    width: 14
+                    height: 14
+                    ShapePath {
+                        fillColor: root.colorTextMuted
+                        strokeColor: "transparent"
+                        PathSvg {
+                            path: "M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
+                        }
+                    }
                 }
 
                 TextField {
@@ -124,9 +131,26 @@ Rectangle {
                         anchors.rightMargin: 8
                         spacing: 10
 
-                        Text {
-                            text: model.icon
-                            font.pixelSize: 14
+                        Shape {
+                            width: 16
+                            height: 16
+                            ShapePath {
+                                fillColor: root.colorAccent
+                                strokeColor: "transparent"
+                                PathSvg {
+                                    path: {
+                                        if (model.type === "plugin") {
+                                            return "M16 7h-1V6c0-1.1-.9-2-2-2h-3c-1.1 0-2 .9-2 2v1H7c-1.1 0-2 .9-2 2v6c0 2.21 1.79 4 4 4h1v2h2v-2h2v2h2v-2h1c2.21 0 4-1.79 4-4V9c0-1.1-.9-2-2-2z"
+                                        } else if (model.type === "sample") {
+                                            return "M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"
+                                        } else if (model.type === "project") {
+                                            return "M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H6v-2h8v2zm3-4H6v-2h11v2zm0-4H6V7h11v2z"
+                                        } else {
+                                            return "M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"
+                                        }
+                                    }
+                                }
+                            }
                         }
 
                         ColumnLayout {
