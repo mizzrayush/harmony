@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/">
+        <file>qml/main.qml</file>
+        <file>qml/Toolbar.qml</file>
+        <file>qml/SidebarBrowser.qml</file>
+        <file>qml/TimelineWorkspace.qml</file>
+        <file>qml/BottomPanel.qml</file>
+    </qresource>
+</RCC>

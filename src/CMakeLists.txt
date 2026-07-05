@@ -30,10 +30,16 @@ ENDIF()
 
 ADD_SUBDIRECTORY(common)
 ADD_SUBDIRECTORY(core)
-ADD_SUBDIRECTORY(gui)
 ADD_SUBDIRECTORY(tracks)
 
-LIST(APPEND LMMS_SRCS ${LMMS_COMMON_SRCS})
+# Group the core engine sources (common, core, tracks)
+SET(LMMS_CORE_SRCS ${LMMS_SRCS} ${LMMS_COMMON_SRCS})
+
+# Add legacy GUI sources (this will append gui sources to LMMS_SRCS)
+ADD_SUBDIRECTORY(gui)
+
+# Add Harmony GUI sources
+ADD_SUBDIRECTORY(harmony_gui)
 
 IF(WANT_QT6)
 	QT6_WRAP_UI(LMMS_UI_OUT ${LMMS_UIS})
@@ -119,6 +125,47 @@ TARGET_INCLUDE_DIRECTORIES(lmms
 	PUBLIC ${CMAKE_CURRENT_BINARY_DIR}
 )
 target_static_libraries(lmms PUBLIC lmmsobjs)
+
+# Add Harmony executable and object library if Qt6 is enabled
+IF(WANT_QT6)
+	FIND_PACKAGE(Qt6 COMPONENTS Quick Qml REQUIRED)
+
+	ADD_LIBRARY(harmonyobjs OBJECT
+		${LMMS_CORE_SRCS}
+		${HARMONY_GUI_SRCS}
+		${LMMS_INCLUDES}
+		${LMMS_RCC_OUT}
+	)
+
+	GENERATE_EXPORT_HEADER(harmonyobjs
+		BASE_NAME harmony
+	)
+
+	ADD_EXECUTABLE(harmony
+		harmony_main.cpp
+		"${WINRC}"
+	)
+
+	TARGET_INCLUDE_DIRECTORIES(harmony
+		PUBLIC ${CMAKE_CURRENT_BINARY_DIR}
+	)
+
+	TARGET_COMPILE_DEFINITIONS(harmonyobjs
+		PRIVATE -Dharmonyobjs_EXPORTS
+	)
+	target_static_definitions(harmonyobjs HARMONY_STATIC_DEFINE)
+
+	target_static_libraries(harmony PUBLIC harmonyobjs)
+
+	TARGET_LINK_LIBRARIES(harmonyobjs
+		${LMMS_REQUIRED_LIBS}
+		Qt6::Quick
+		Qt6::Qml
+	)
+	target_static_libraries(harmonyobjs ringbuffer)
+
+	INSTALL(TARGETS harmony RUNTIME DESTINATION "${BIN_DIR}")
+ENDIF()
 
 # Enable updated C++ language standards
 IF(MSVC)

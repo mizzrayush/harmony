@@ -385,7 +385,7 @@ jobs:
         with:
           version: '6.8.*'
           arch: "win64_msvc2022_64"
-          archives: qtbase qtsvg qttools
+          archives: qtbase qtsvg qttools qtdeclarative
           cache: true
       - name: Set up build environment
         uses: ilammy/msvc-dev-cmd@cec98b9d092141f74527d0afa6feb2af698cfe89
@@ -422,7 +422,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: msvc-x64
-          path: build\lmms-*.exe
+          path: |
+            build\lmms-*.exe
+            build\harmony.exe
       - name: Trim ccache and print statistics
         run: |
           ccache --cleanup
