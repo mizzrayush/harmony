@@ -167,6 +167,13 @@ IF(WANT_QT6)
 	)
 	target_static_libraries(harmonyobjs ringbuffer)
 
+	set_target_properties(harmonyobjs PROPERTIES AUTOUIC_SEARCH_PATHS "gui/modals")
+
+	set_target_properties(harmony PROPERTIES
+		ENABLE_EXPORTS ON
+		WIN32_EXECUTABLE $<NOT:$<CONFIG:DEBUG>>
+	)
+
 	INSTALL(TARGETS harmony RUNTIME DESTINATION "${BIN_DIR}")
 ENDIF()
 
