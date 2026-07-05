@@ -1,6 +1,6 @@
 import QtQuick
 import QtQuick.Controls
-import Harmony
+import Harmony 1.0
 
 ApplicationWindow {
     id: root

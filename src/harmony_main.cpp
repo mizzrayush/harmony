@@ -11,14 +11,45 @@
 #include <QLocale>
 #include <QTimer>
 #include <QTranslator>
+#include <QFile>
+#include <QTextStream>
+#include <QDateTime>
+
+#ifdef LMMS_BUILD_WIN32
+#include <windows.h>
+#endif
 
 #include "ConfigManager.h"
 #include "Engine.h"
 #include "NotePlayHandle.h"
 #include "harmony_gui/HarmonyApp.h"
 
+// File message handler for debugging QML/C++ at runtime
+void harmonyMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg)
+{
+	QFile logFile("harmony_log.txt");
+	if (logFile.open(QIODevice::WriteOnly | QIODevice::Append)) {
+		QTextStream stream(&logFile);
+		switch (type) {
+		case QtDebugMsg: stream << "DEBUG: "; break;
+		case QtInfoMsg: stream << "INFO: "; break;
+		case QtWarningMsg: stream << "WARNING: "; break;
+		case QtCriticalMsg: stream << "CRITICAL: "; break;
+		case QtFatalMsg: stream << "FATAL: "; break;
+		}
+		stream << QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss.zzz")
+		       << " [" << (context.file ? context.file : "") << ":" << context.line << "] " << msg << "\n";
+	}
+#ifdef LMMS_BUILD_WIN32
+	OutputDebugStringW(reinterpret_cast<const wchar_t*>(msg.utf16()));
+#endif
+}
+
 int main(int argc, char** argv)
 {
+	// Install file logger first
+	qInstallMessageHandler(harmonyMessageHandler);
+
 	using namespace lmms;
 
 	// Initialize memory managers

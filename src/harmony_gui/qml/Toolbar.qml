@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
 import QtQuick.Shapes
-import Harmony
+import Harmony 1.0
 
 ToolBar {
     id: control
