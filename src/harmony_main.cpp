@@ -79,6 +79,9 @@ int main(int argc, char** argv)
 	qDebug() << "Initializing LMMS Audio Engine...";
 	Engine::init(false);
 
+	// Initialize project with default template
+	Engine::getSong()->createNewProject();
+
 	// Initialize Harmony QML Application lifecycle manager
 	qDebug() << "Launching Harmony QML Application...";
 	harmony::gui::HarmonyApp harmonyApp;
