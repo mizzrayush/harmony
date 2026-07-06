@@ -495,7 +495,6 @@ Rectangle {
                     // Volume Envelope ADSR Panel
                     GroupBox {
                         title: "VOLUME ENVELOPE (ADSR)"
-                        flat: true
                         Layout.alignment: Qt.AlignTop
 
                         label: Text {
@@ -576,7 +575,6 @@ Rectangle {
                     // Analog Filter Panel
                     GroupBox {
                         title: "ANALOG FILTER"
-                        flat: true
                         Layout.alignment: Qt.AlignTop
 
                         label: Text {
