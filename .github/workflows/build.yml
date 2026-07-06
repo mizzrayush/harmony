@@ -383,7 +383,7 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@d325aaf2a8baeeda41ad0b5d39f84a6af9bcf005
         with:
-          version: '6.8.*'
+          version: '6.8.1'
           arch: "win64_msvc2022_64"
           archives: qtbase qtsvg qttools qtdeclarative
           cache: true
