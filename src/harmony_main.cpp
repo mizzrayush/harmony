@@ -47,6 +47,9 @@ void harmonyMessageHandler(QtMsgType type, const QMessageLogContext &context, co
 
 int main(int argc, char** argv)
 {
+	// Force initialization of QML resources (avoids linker stripping)
+	Q_INIT_RESOURCE(harmony_qml);
+
 	// Install file logger first
 	qInstallMessageHandler(harmonyMessageHandler);
 
