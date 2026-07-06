@@ -356,6 +356,67 @@ ToolBar {
         // Spacer
         Item { Layout.fillWidth: true }
 
+        // Oscilloscope / Visualizer
+        RowLayout {
+            spacing: 8
+            Text {
+                text: "OUT"
+                color: root.colorTextMuted
+                font.pixelSize: 10
+                font.bold: true
+            }
+            Rectangle {
+                width: 90
+                height: 24
+                color: "#0a0a0d"
+                radius: 4
+                border.color: root.colorBorder
+                border.width: 1
+                clip: true
+
+                Canvas {
+                    id: oscCanvas
+                    anchors.fill: parent
+                    anchors.margins: 1
+                    property real phase: 0.0
+
+                    Timer {
+                        interval: 30
+                        running: true
+                        repeat: true
+                        onTriggered: {
+                            if (playback.isPlaying) {
+                                oscCanvas.phase += 0.25
+                                oscCanvas.requestPaint()
+                            } else if (oscCanvas.phase > 0) {
+                                oscCanvas.phase = 0.0
+                                oscCanvas.requestPaint()
+                            }
+                        }
+                    }
+
+                    onPaint: {
+                        var ctx = getContext("2d")
+                        ctx.clearRect(0, 0, width, height)
+                        ctx.strokeStyle = "#22c55e"
+                        ctx.lineWidth = 1.5
+                        ctx.beginPath()
+
+                        ctx.moveTo(0, height / 2)
+                        for (var x = 0; x < width; x++) {
+                            var y = height / 2
+                            if (playback.isPlaying) {
+                                var amp = (height / 2.5) * (0.8 + 0.2 * Math.sin(phase * 0.2))
+                                y += Math.sin(x * 0.15 - phase) * Math.cos(x * 0.05 + phase * 0.1) * amp
+                            }
+                            ctx.lineTo(x, y)
+                        }
+                        ctx.stroke()
+                    }
+                }
+            }
+        }
+
         // System CPU Indicator
         RowLayout {
             spacing: 8

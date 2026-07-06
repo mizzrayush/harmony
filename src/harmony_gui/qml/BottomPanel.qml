@@ -103,16 +103,20 @@ Rectangle {
                             delegate: Rectangle {
                                 width: pianoKeysScroll.width
                                 height: 20
-                                
+                                color: root.colorBorder
+
                                 // Determine if black key (notes: C#, D#, F#, G#, A# -> 1,3,6,8,10 in octave)
                                 property int keyNum: 95 - index
                                 property int noteInOctave: keyNum % 12
                                 property bool isBlack: noteInOctave === 1 || noteInOctave === 3 || noteInOctave === 6 || noteInOctave === 8 || noteInOctave === 10
 
-                                color: isBlack ? "#1e1e24" : "#ffffff"
-                                border.color: "#888899"
-                                border.width: 0.5
-                                radius: 1
+                                Rectangle {
+                                    anchors.fill: parent
+                                    anchors.rightMargin: isBlack ? 16 : 0
+                                    anchors.bottomMargin: 1
+                                    color: isBlack ? "#18191d" : "#f1f2f6"
+                                    radius: isBlack ? 2 : 0
+                                }
 
                                 Text {
                                     anchors.right: parent.right
@@ -125,7 +129,7 @@ Rectangle {
                                         }
                                         return ""
                                     }
-                                    color: isBlack ? "#ffffff" : "#000000"
+                                    color: isBlack ? "#ffffff" : "#4a5568"
                                     font.pixelSize: 8
                                     font.bold: true
                                 }
@@ -209,10 +213,13 @@ Rectangle {
                                 y: (95 - model.noteKey) * 20
                                 width: Math.max(12, (model.lengthTicks / 12) * 24)
                                 height: 18
-                                color: root.colorAccent
                                 border.color: Qt.lighter(root.colorAccent, 1.2)
                                 border.width: 1
                                 radius: 3
+                                gradient: Gradient {
+                                    GradientStop { position: 0.0; color: "#b68eff" }
+                                    GradientStop { position: 1.0; color: "#7f39fb" }
+                                }
 
                                 Text {
                                     anchors.left: parent.left
@@ -408,6 +415,45 @@ Rectangle {
                             }
                         }
                     }
+
+                    footer: Rectangle {
+                        width: 95
+                        height: mixerListView.height
+                        color: "transparent"
+
+                        Button {
+                            id: addMixerBtn
+                            anchors.fill: parent
+                            anchors.margins: 4
+                            background: Rectangle {
+                                color: addMixerBtn.hovered ? root.colorPanelLight : "transparent"
+                                border.color: addMixerBtn.hovered ? root.colorAccent : root.colorBorder
+                                border.width: 1
+                                radius: 6
+                            }
+                            contentItem: ColumnLayout {
+                                anchors.centerIn: parent
+                                spacing: 4
+                                Text {
+                                    text: "+"
+                                    color: addMixerBtn.hovered ? root.colorAccent : root.colorTextMuted
+                                    font.pixelSize: 24
+                                    font.bold: true
+                                    horizontalAlignment: Text.AlignHCenter
+                                    Layout.fillWidth: true
+                                }
+                                Text {
+                                    text: "Add Channel"
+                                    color: root.colorTextMuted
+                                    font.pixelSize: 9
+                                    font.bold: true
+                                    horizontalAlignment: Text.AlignHCenter
+                                    Layout.fillWidth: true
+                                }
+                            }
+                            onClicked: globalMixerModel.addChannel()
+                        }
+                    }
                 }
             }
 
@@ -488,77 +534,138 @@ Rectangle {
                 // Envelope & Filter Controls
                 RowLayout {
                     Layout.fillWidth: true
-                    spacing: 30
+                    spacing: 20
                     Layout.alignment: Qt.AlignHCenter
 
                     // Volume Envelope ADSR Panel
-                    GroupBox {
-                        title: "VOLUME ENVELOPE (ADSR)"
-                        Layout.alignment: Qt.AlignTop
+                    Rectangle {
+                        color: root.colorPanelLight
+                        radius: 8
+                        border.color: root.colorBorder
+                        border.width: 1
+                        implicitWidth: 260
+                        implicitHeight: 110
 
-                        label: Text {
-                            text: "VOLUME ENVELOPE (ADSR)"
-                            color: root.colorText
-                            font.pixelSize: 10
-                            font.bold: true
-                        }
+                        ColumnLayout {
+                            anchors.fill: parent
+                            anchors.margins: 10
+                            spacing: 8
 
-                        background: Rectangle {
-                            color: "transparent"
-                        }
-
-                        RowLayout {
-                            spacing: 16
-
-                            // Attack
-                            ColumnLayout {
-                                spacing: 4
-                                Text { text: "ATTACK"; color: root.colorTextMuted; font.pixelSize: 8; font.bold: true; Layout.alignment: Qt.AlignHCenter }
-                                Dial {
-                                    id: attDial
-                                    value: globalInstrumentControlModel.volumeAttack
-                                    implicitWidth: 46; implicitHeight: 46
-                                    onMoved: globalInstrumentControlModel.volumeAttack = value
-                                    background: Rectangle { width: 46; height: 46; radius: 23; color: root.colorPanelLight; border.color: root.colorBorder }
-                                }
+                            Text {
+                                text: "VOLUME ENVELOPE (ADSR)"
+                                color: root.colorText
+                                font.pixelSize: 10
+                                font.bold: true
+                                Layout.alignment: Qt.AlignLeft
                             }
 
-                            // Decay
-                            ColumnLayout {
-                                spacing: 4
-                                Text { text: "DECAY"; color: root.colorTextMuted; font.pixelSize: 8; font.bold: true; Layout.alignment: Qt.AlignHCenter }
-                                Dial {
-                                    id: decDial
-                                    value: globalInstrumentControlModel.volumeDecay
-                                    implicitWidth: 46; implicitHeight: 46
-                                    onMoved: globalInstrumentControlModel.volumeDecay = value
-                                    background: Rectangle { width: 46; height: 46; radius: 23; color: root.colorPanelLight; border.color: root.colorBorder }
-                                }
-                            }
+                            RowLayout {
+                                Layout.fillWidth: true
+                                spacing: 12
+                                Layout.alignment: Qt.AlignHCenter
 
-                            // Sustain
-                            ColumnLayout {
-                                spacing: 4
-                                Text { text: "SUSTAIN"; color: root.colorTextMuted; font.pixelSize: 8; font.bold: true; Layout.alignment: Qt.AlignHCenter }
-                                Dial {
-                                    id: susDial
-                                    value: globalInstrumentControlModel.volumeSustain
-                                    implicitWidth: 46; implicitHeight: 46
-                                    onMoved: globalInstrumentControlModel.volumeSustain = value
-                                    background: Rectangle { width: 46; height: 46; radius: 23; color: root.colorPanelLight; border.color: root.colorBorder }
+                                // Attack
+                                ColumnLayout {
+                                    spacing: 4
+                                    Text { text: "ATTACK"; color: root.colorTextMuted; font.pixelSize: 8; font.bold: true; Layout.alignment: Qt.AlignHCenter }
+                                    Dial {
+                                        id: attDial
+                                        value: globalInstrumentControlModel.volumeAttack
+                                        implicitWidth: 42; implicitHeight: 42
+                                        onMoved: globalInstrumentControlModel.volumeAttack = value
+                                        
+                                        background: Rectangle {
+                                            width: 42; height: 42; radius: 21; color: root.colorBg; border.color: attDial.hovered ? root.colorAccent : root.colorBorder; border.width: 1.5
+                                        }
+                                        handle: Rectangle {
+                                            id: attHandle
+                                            x: 21 - width / 2
+                                            y: 21 - height / 2
+                                            width: 6; height: 6; radius: 3; color: root.colorAccent
+                                            transform: [
+                                                Translate { y: -12 },
+                                                Rotation { angle: attDial.angle; origin.x: attHandle.width / 2; origin.y: attHandle.height / 2 + 12 }
+                                            ]
+                                        }
+                                    }
                                 }
-                            }
 
-                            // Release
-                            ColumnLayout {
-                                spacing: 4
-                                Text { text: "RELEASE"; color: root.colorTextMuted; font.pixelSize: 8; font.bold: true; Layout.alignment: Qt.AlignHCenter }
-                                Dial {
-                                    id: relDial
-                                    value: globalInstrumentControlModel.volumeRelease
-                                    implicitWidth: 46; implicitHeight: 46
-                                    onMoved: globalInstrumentControlModel.volumeRelease = value
-                                    background: Rectangle { width: 46; height: 46; radius: 23; color: root.colorPanelLight; border.color: root.colorBorder }
+                                // Decay
+                                ColumnLayout {
+                                    spacing: 4
+                                    Text { text: "DECAY"; color: root.colorTextMuted; font.pixelSize: 8; font.bold: true; Layout.alignment: Qt.AlignHCenter }
+                                    Dial {
+                                        id: decDial
+                                        value: globalInstrumentControlModel.volumeDecay
+                                        implicitWidth: 42; implicitHeight: 42
+                                        onMoved: globalInstrumentControlModel.volumeDecay = value
+                                        
+                                        background: Rectangle {
+                                            width: 42; height: 42; radius: 21; color: root.colorBg; border.color: decDial.hovered ? root.colorAccent : root.colorBorder; border.width: 1.5
+                                        }
+                                        handle: Rectangle {
+                                            id: decHandle
+                                            x: 21 - width / 2
+                                            y: 21 - height / 2
+                                            width: 6; height: 6; radius: 3; color: root.colorAccent
+                                            transform: [
+                                                Translate { y: -12 },
+                                                Rotation { angle: decDial.angle; origin.x: decHandle.width / 2; origin.y: decHandle.height / 2 + 12 }
+                                            ]
+                                        }
+                                    }
+                                }
+
+                                // Sustain
+                                ColumnLayout {
+                                    spacing: 4
+                                    Text { text: "SUSTAIN"; color: root.colorTextMuted; font.pixelSize: 8; font.bold: true; Layout.alignment: Qt.AlignHCenter }
+                                    Dial {
+                                        id: susDial
+                                        value: globalInstrumentControlModel.volumeSustain
+                                        implicitWidth: 42; implicitHeight: 42
+                                        onMoved: globalInstrumentControlModel.volumeSustain = value
+                                        
+                                        background: Rectangle {
+                                            width: 42; height: 42; radius: 21; color: root.colorBg; border.color: susDial.hovered ? root.colorAccent : root.colorBorder; border.width: 1.5
+                                        }
+                                        handle: Rectangle {
+                                            id: susHandle
+                                            x: 21 - width / 2
+                                            y: 21 - height / 2
+                                            width: 6; height: 6; radius: 3; color: root.colorAccent
+                                            transform: [
+                                                Translate { y: -12 },
+                                                Rotation { angle: susDial.angle; origin.x: susHandle.width / 2; origin.y: susHandle.height / 2 + 12 }
+                                            ]
+                                        }
+                                    }
+                                }
+
+                                // Release
+                                ColumnLayout {
+                                    spacing: 4
+                                    Text { text: "RELEASE"; color: root.colorTextMuted; font.pixelSize: 8; font.bold: true; Layout.alignment: Qt.AlignHCenter }
+                                    Dial {
+                                        id: relDial
+                                        value: globalInstrumentControlModel.volumeRelease
+                                        implicitWidth: 42; implicitHeight: 42
+                                        onMoved: globalInstrumentControlModel.volumeRelease = value
+                                        
+                                        background: Rectangle {
+                                            width: 42; height: 42; radius: 21; color: root.colorBg; border.color: relDial.hovered ? root.colorAccent : root.colorBorder; border.width: 1.5
+                                        }
+                                        handle: Rectangle {
+                                            id: relHandle
+                                            x: 21 - width / 2
+                                            y: 21 - height / 2
+                                            width: 6; height: 6; radius: 3; color: root.colorAccent
+                                            transform: [
+                                                Translate { y: -12 },
+                                                Rotation { angle: relDial.angle; origin.x: relHandle.width / 2; origin.y: relHandle.height / 2 + 12 }
+                                            ]
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -572,58 +679,94 @@ Rectangle {
                     }
 
                     // Analog Filter Panel
-                    GroupBox {
-                        title: "ANALOG FILTER"
-                        Layout.alignment: Qt.AlignTop
+                    Rectangle {
+                        color: root.colorPanelLight
+                        radius: 8
+                        border.color: root.colorBorder
+                        border.width: 1
+                        implicitWidth: 230
+                        implicitHeight: 110
 
-                        label: Text {
-                            text: "ANALOG FILTER"
-                            color: root.colorText
-                            font.pixelSize: 10
-                            font.bold: true
-                        }
+                        ColumnLayout {
+                            anchors.fill: parent
+                            anchors.margins: 10
+                            spacing: 8
 
-                        background: Rectangle {
-                            color: "transparent"
-                        }
-
-                        RowLayout {
-                            spacing: 20
-
-                            // Filter Enabled CheckBox
-                            ColumnLayout {
-                                spacing: 4
-                                Text { text: "ENABLED"; color: root.colorTextMuted; font.pixelSize: 8; font.bold: true; Layout.alignment: Qt.AlignHCenter }
-                                CheckBox {
-                                    id: filterEnableBox
-                                    checked: globalInstrumentControlModel.filterEnabled
-                                    onCheckedChanged: globalInstrumentControlModel.filterEnabled = checked
-                                }
+                            Text {
+                                text: "ANALOG FILTER"
+                                color: root.colorText
+                                font.pixelSize: 10
+                                font.bold: true
+                                Layout.alignment: Qt.AlignLeft
                             }
 
-                            // Cutoff
-                            ColumnLayout {
-                                spacing: 4
-                                Text { text: "CUTOFF"; color: root.colorTextMuted; font.pixelSize: 8; font.bold: true; Layout.alignment: Qt.AlignHCenter }
-                                Dial {
-                                    id: cutDial
-                                    value: globalInstrumentControlModel.filterCutoff
-                                    implicitWidth: 46; implicitHeight: 46
-                                    onMoved: globalInstrumentControlModel.filterCutoff = value
-                                    background: Rectangle { width: 46; height: 46; radius: 23; color: root.colorPanelLight; border.color: root.colorBorder }
-                                }
-                            }
+                            RowLayout {
+                                Layout.fillWidth: true
+                                spacing: 14
+                                Layout.alignment: Qt.AlignHCenter
 
-                            // Resonance
-                            ColumnLayout {
-                                spacing: 4
-                                Text { text: "RESONANCE"; color: root.colorTextMuted; font.pixelSize: 8; font.bold: true; Layout.alignment: Qt.AlignHCenter }
-                                Dial {
-                                    id: resDial
-                                    value: globalInstrumentControlModel.filterResonance
-                                    implicitWidth: 46; implicitHeight: 46
-                                    onMoved: globalInstrumentControlModel.filterResonance = value
-                                    background: Rectangle { width: 46; height: 46; radius: 23; color: root.colorPanelLight; border.color: root.colorBorder }
+                                // Filter Enabled CheckBox
+                                ColumnLayout {
+                                    spacing: 4
+                                    Text { text: "ENABLED"; color: root.colorTextMuted; font.pixelSize: 8; font.bold: true; Layout.alignment: Qt.AlignHCenter }
+                                    CheckBox {
+                                        id: filterEnableBox
+                                        checked: globalInstrumentControlModel.filterEnabled
+                                        onCheckedChanged: globalInstrumentControlModel.filterEnabled = checked
+                                        Layout.alignment: Qt.AlignHCenter
+                                    }
+                                }
+
+                                // Cutoff
+                                ColumnLayout {
+                                    spacing: 4
+                                    Text { text: "CUTOFF"; color: root.colorTextMuted; font.pixelSize: 8; font.bold: true; Layout.alignment: Qt.AlignHCenter }
+                                    Dial {
+                                        id: cutDial
+                                        value: globalInstrumentControlModel.filterCutoff
+                                        implicitWidth: 42; implicitHeight: 42
+                                        onMoved: globalInstrumentControlModel.filterCutoff = value
+                                        
+                                        background: Rectangle {
+                                            width: 42; height: 42; radius: 21; color: root.colorBg; border.color: cutDial.hovered ? root.colorAccent : root.colorBorder; border.width: 1.5
+                                        }
+                                        handle: Rectangle {
+                                            id: cutHandle
+                                            x: 21 - width / 2
+                                            y: 21 - height / 2
+                                            width: 6; height: 6; radius: 3; color: root.colorAccent
+                                            transform: [
+                                                Translate { y: -12 },
+                                                Rotation { angle: cutDial.angle; origin.x: cutHandle.width / 2; origin.y: cutHandle.height / 2 + 12 }
+                                            ]
+                                        }
+                                    }
+                                }
+
+                                // Resonance
+                                ColumnLayout {
+                                    spacing: 4
+                                    Text { text: "RESONANCE"; color: root.colorTextMuted; font.pixelSize: 8; font.bold: true; Layout.alignment: Qt.AlignHCenter }
+                                    Dial {
+                                        id: resDial
+                                        value: globalInstrumentControlModel.filterResonance
+                                        implicitWidth: 42; implicitHeight: 42
+                                        onMoved: globalInstrumentControlModel.filterResonance = value
+                                        
+                                        background: Rectangle {
+                                            width: 42; height: 42; radius: 21; color: root.colorBg; border.color: resDial.hovered ? root.colorAccent : root.colorBorder; border.width: 1.5
+                                        }
+                                        handle: Rectangle {
+                                            id: resHandle
+                                            x: 21 - width / 2
+                                            y: 21 - height / 2
+                                            width: 6; height: 6; radius: 3; color: root.colorAccent
+                                            transform: [
+                                                Translate { y: -12 },
+                                                Rotation { angle: resDial.angle; origin.x: resHandle.width / 2; origin.y: resHandle.height / 2 + 12 }
+                                            ]
+                                        }
+                                    }
                                 }
                             }
                         }
