@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Dialogs
 import Harmony 1.0
 
 ApplicationWindow {
@@ -107,6 +108,25 @@ ApplicationWindow {
                 SplitView.preferredHeight: 250
                 SplitView.minimumHeight: 150
             }
+        }
+    }
+
+    FileDialog {
+        id: openFileDialog
+        title: qsTr("Open Harmony Project")
+        nameFilters: ["LMMS Project Files (*.mmp *.mmpz)", "All Files (*)"]
+        onAccepted: {
+            playback.loadProject(selectedFile)
+        }
+    }
+
+    FileDialog {
+        id: saveFileDialog
+        title: qsTr("Save Harmony Project As")
+        fileMode: FileDialog.SaveFile
+        nameFilters: ["LMMS Project Files (*.mmp *.mmpz)", "All Files (*)"]
+        onAccepted: {
+            playback.saveProjectAs(selectedFile)
         }
     }
 }

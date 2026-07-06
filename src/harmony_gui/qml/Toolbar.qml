@@ -55,6 +55,125 @@ ToolBar {
             }
         }
 
+        // File Actions Panel
+        RowLayout {
+            spacing: 6
+
+            // New Button
+            Button {
+                id: newBtn
+                implicitWidth: 32
+                implicitHeight: 32
+                ToolTip.visible: hovered
+                ToolTip.text: qsTr("New Project")
+                background: Rectangle {
+                    radius: 6
+                    color: newBtn.hovered ? root.colorPanelLight : "transparent"
+                    border.color: newBtn.hovered ? root.colorBorder : "transparent"
+                }
+                contentItem: Shape {
+                    anchors.centerIn: parent
+                    width: 14
+                    height: 14
+                    ShapePath {
+                        fillColor: newBtn.hovered ? root.colorAccentHover : root.colorText
+                        strokeColor: "transparent"
+                        PathSvg {
+                            path: "M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zM6 20V4h7v5h5v11H6z"
+                        }
+                    }
+                }
+                onClicked: playback.createNewProject()
+            }
+
+            // Open Button
+            Button {
+                id: openBtn
+                implicitWidth: 32
+                implicitHeight: 32
+                ToolTip.visible: hovered
+                ToolTip.text: qsTr("Open Project")
+                background: Rectangle {
+                    radius: 6
+                    color: openBtn.hovered ? root.colorPanelLight : "transparent"
+                    border.color: openBtn.hovered ? root.colorBorder : "transparent"
+                }
+                contentItem: Shape {
+                    anchors.centerIn: parent
+                    width: 14
+                    height: 14
+                    ShapePath {
+                        fillColor: openBtn.hovered ? root.colorAccentHover : root.colorText
+                        strokeColor: "transparent"
+                        PathSvg {
+                            path: "M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10z"
+                        }
+                    }
+                }
+                onClicked: openFileDialog.open()
+            }
+
+            // Save Button
+            Button {
+                id: saveBtn
+                implicitWidth: 32
+                implicitHeight: 32
+                ToolTip.visible: hovered
+                ToolTip.text: qsTr("Save Project")
+                background: Rectangle {
+                    radius: 6
+                    color: saveBtn.hovered ? root.colorPanelLight : "transparent"
+                    border.color: saveBtn.hovered ? root.colorBorder : "transparent"
+                }
+                contentItem: Shape {
+                    anchors.centerIn: parent
+                    width: 14
+                    height: 14
+                    ShapePath {
+                        fillColor: saveBtn.hovered ? root.colorAccentHover : root.colorText
+                        strokeColor: "transparent"
+                        PathSvg {
+                            path: "M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm2 16H5V5h11.17L19 7.83V19zm-7-7c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3zM6 6h9v4H6V6z"
+                        }
+                    }
+                }
+                onClicked: {
+                    if (playback.projectFileName === "") {
+                        saveFileDialog.open()
+                    } else {
+                        playback.saveProject()
+                    }
+                }
+            }
+
+            // Save As Button
+            Button {
+                id: saveAsBtn
+                implicitWidth: 32
+                implicitHeight: 32
+                ToolTip.visible: hovered
+                ToolTip.text: qsTr("Save Project As")
+                background: Rectangle {
+                    radius: 6
+                    color: saveAsBtn.hovered ? root.colorPanelLight : "transparent"
+                    border.color: saveAsBtn.hovered ? root.colorBorder : "transparent"
+                }
+                contentItem: Shape {
+                    anchors.centerIn: parent
+                    width: 14
+                    height: 14
+                    ShapePath {
+                        fillColor: saveAsBtn.hovered ? root.colorAccentHover : root.colorText
+                        strokeColor: "transparent"
+                        PathSvg {
+                            path: "M12.9 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V9l-6-6zm6 16H5V5h7v5h5v9z"
+                        }
+                    }
+                }
+                onClicked: saveFileDialog.open()
+            }
+        }
+
         // Spacer
         Item { Layout.fillWidth: true }
 

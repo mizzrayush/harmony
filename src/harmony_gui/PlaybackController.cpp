@@ -7,6 +7,7 @@
 #include "Song.h"
 #include "TimePos.h"
 #include <QDebug>
+#include <QUrl>
 
 namespace harmony::gui
 {
@@ -153,6 +154,62 @@ void PlaybackController::updatePosition()
 		m_lastTicks = current;
 		emit timePositionChanged();
 	}
+}
+
+QString PlaybackController::projectFileName() const
+{
+	lmms::Song* song = getSong();
+	return song ? song->projectFileName() : QString();
+}
+
+void PlaybackController::createNewProject()
+{
+	lmms::Song* song = getSong();
+	if (song) {
+		song->createNewProject();
+		emit projectFileChanged();
+		emit tempoChanged();
+	}
+}
+
+void PlaybackController::loadProject(const QString &filename)
+{
+	lmms::Song* song = getSong();
+	if (song) {
+		QString localFile = filename;
+		if (localFile.startsWith("file:///")) {
+			localFile = QUrl(filename).toLocalFile();
+		}
+		song->loadProject(localFile);
+		emit projectFileChanged();
+		emit tempoChanged();
+	}
+}
+
+bool PlaybackController::saveProject()
+{
+	lmms::Song* song = getSong();
+	if (song) {
+		bool ok = song->guiSaveProject();
+		emit projectFileChanged();
+		return ok;
+	}
+	return false;
+}
+
+bool PlaybackController::saveProjectAs(const QString &filename)
+{
+	lmms::Song* song = getSong();
+	if (song) {
+		QString localFile = filename;
+		if (localFile.startsWith("file:///")) {
+			localFile = QUrl(filename).toLocalFile();
+		}
+		bool ok = song->guiSaveProjectAs(localFile);
+		emit projectFileChanged();
+		return ok;
+	}
+	return false;
 }
 
 } // namespace harmony::gui

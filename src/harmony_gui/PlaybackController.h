@@ -21,6 +21,7 @@ class PlaybackController : public QObject
 	Q_PROPERTY(int tempo READ tempo WRITE setTempo NOTIFY tempoChanged)
 	Q_PROPERTY(QString timePosition READ timePosition NOTIFY timePositionChanged)
 	Q_PROPERTY(int timePosTicks READ timePosTicks WRITE setTimePosTicks NOTIFY timePositionChanged)
+	Q_PROPERTY(QString projectFileName READ projectFileName NOTIFY projectFileChanged)
 
 public:
 	explicit PlaybackController(QObject* parent = nullptr);
@@ -34,6 +35,12 @@ public:
 	QString timePosition() const;
 	int timePosTicks() const;
 	void setTimePosTicks(int ticks);
+	QString projectFileName() const;
+
+	Q_INVOKABLE void createNewProject();
+	Q_INVOKABLE void loadProject(const QString &filename);
+	Q_INVOKABLE bool saveProject();
+	Q_INVOKABLE bool saveProjectAs(const QString &filename);
 
 public slots:
 	void play();
@@ -45,6 +52,7 @@ signals:
 	void playbackStateChanged();
 	void tempoChanged();
 	void timePositionChanged();
+	void projectFileChanged();
 
 private slots:
 	void onPlaybackStateChanged();
