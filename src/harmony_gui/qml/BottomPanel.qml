@@ -7,6 +7,7 @@ import Harmony 1.0
 Rectangle {
     id: bottomRoot
     color: root.colorPanel
+    property int activeTab: 0 // Default to Piano Roll
 
     // Top border separator
     Rectangle {
@@ -34,8 +35,6 @@ Rectangle {
                 anchors.leftMargin: 12
                 spacing: 8
 
-                property int activeTab: 0 // Default to Piano Roll
-
                 Repeater {
                     model: ["Piano Roll", "FX Mixer", "Sampler"]
                     delegate: Button {
@@ -44,7 +43,7 @@ Rectangle {
                         implicitHeight: 28
 
                         background: Rectangle {
-                            color: parent.parent.activeTab === index ? root.colorPanelLight : "transparent"
+                            color: bottomRoot.activeTab === index ? root.colorPanelLight : "transparent"
                             radius: 4
                             Rectangle {
                                 anchors.bottom: parent.bottom
@@ -52,20 +51,20 @@ Rectangle {
                                 width: parent.width * 0.8
                                 height: 2
                                 color: root.colorAccent
-                                visible: parent.parent.parent.activeTab === index
+                                visible: bottomRoot.activeTab === index
                             }
                         }
 
                         contentItem: Text {
                             text: modelData
-                            color: parent.parent.parent.activeTab === index ? root.colorText : root.colorTextMuted
+                            color: bottomRoot.activeTab === index ? root.colorText : root.colorTextMuted
                             font.pixelSize: 11
                             font.bold: true
                             horizontalAlignment: Text.AlignHCenter
                             verticalAlignment: Text.AlignVCenter
                         }
 
-                        onClicked: parent.parent.activeTab = index
+                        onClicked: bottomRoot.activeTab = index
                     }
                 }
             }
@@ -75,7 +74,7 @@ Rectangle {
         StackLayout {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            currentIndex: bottomRoot.children[1].children[0].children[0].activeTab
+            currentIndex: bottomRoot.activeTab
 
             // Page 0: Piano Roll (Interactive)
             RowLayout {

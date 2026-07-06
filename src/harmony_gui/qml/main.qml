@@ -10,6 +10,10 @@ ApplicationWindow {
     title: qsTr("Project Harmony - LMMS next-gen frontend")
 
     // Global models accessed by subpanels
+    PlaybackController {
+        id: playback
+    }
+
     TrackListModel {
         id: globalTrackListModel
     }

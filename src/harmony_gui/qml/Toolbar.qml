@@ -7,10 +7,6 @@ import Harmony 1.0
 ToolBar {
     id: control
 
-    PlaybackController {
-        id: playback
-    }
-
     background: Rectangle {
         color: root.colorPanel
         border.color: root.colorBorder
