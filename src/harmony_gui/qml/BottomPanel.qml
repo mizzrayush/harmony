@@ -267,10 +267,10 @@ Rectangle {
                                     anchors.bottom: parent.bottom
                                     anchors.right: parent.right
                                     color: "transparent"
-                                    cursorShape: Qt.SizeHorCursor
 
                                     MouseArea {
                                         anchors.fill: parent
+                                        cursorShape: Qt.SizeHorCursor
                                         drag.target: parent
                                         drag.axis: Drag.XAxis
 
